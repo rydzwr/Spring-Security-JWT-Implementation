@@ -50,42 +50,6 @@ public class UserController {
         return new UserDataResponse("admin only data");
     }
 
-    @GetMapping("/logout")
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
-        Cookie[] cookies = request.getCookies();
-        Map<String, Cookie> cookieMap = new HashMap<>();
-        for (Cookie cookie : cookies) {
-            cookieMap.put(cookie.getName(), cookie);
-        }
-
-        if (!cookieMap.containsKey("jwt")) {
-            response.setStatus(204);
-            return;
-        }
-
-        Cookie deleteJWT = new Cookie("jwt", null);
-        deleteJWT.setMaxAge(0);
-        deleteJWT.setHttpOnly(true);
-        response.addCookie(deleteJWT);
-
-        String authHeader = request.getHeader(AUTHORIZATION);
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring("Bearer ".length());
-            tokenBlackList.add(token);
-        }
-
-        AppUser user = repository.findByRefreshToken(cookieMap.get("jwt").getValue());
-
-        if (user == null) {
-            response.setStatus(204);
-            return;
-        }
-
-        user.setRefreshToken(null);
-        repository.save(user);
-        response.setStatus(204);
-    }
-
     @GetMapping("/token/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Cookie[] cookies = request.getCookies();

@@ -5,6 +5,7 @@ import com.rydzwr.repository.AppUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,7 @@ public class DataLoader implements ApplicationRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-
+    @Profile("dev")
     public void run(ApplicationArguments args) {
         userRepository.deleteAll();
         userRepository.save(new AppUser("user",passwordEncoder.encode("user123"),"USER", null));

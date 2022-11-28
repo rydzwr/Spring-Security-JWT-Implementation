@@ -36,9 +36,23 @@ public class JWTService {
                 .sign(algorithm);
     }
 
-    public UsernamePasswordAuthenticationToken getAuthFromToken(String jwt) {
+    public boolean validateAuthHeader(HttpServletRequest request) {
+        String authHeader = request.getHeader(SecurityConstants.JWT_HEADER);
+        return authHeader != null;
+    }
+
+    public String getTokenFromAuthHeader(HttpServletRequest request) {
+        String authHeader = request.getHeader(SecurityConstants.JWT_HEADER);
+        return authHeader.substring("Bearer ".length());
+    }
+
+    public String getUserRole(Authentication authentication) {
+        return authentication.getAuthorities().toArray()[0].toString();
+    }
+
+    public UsernamePasswordAuthenticationToken getAuthFromToken(HttpServletRequest request) {
         try {
-            String token = jwt.substring("Bearer ".length());
+            String token = getTokenFromAuthHeader(request);
             Algorithm algorithm = Algorithm.HMAC256(SecurityConstants.JWT_KEY.getBytes());
             JWTVerifier verifier = JWT.require(algorithm).build();
 

@@ -1,9 +1,9 @@
 package com.rydzwr.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rydzwr.constants.SecurityConstants;
 import com.rydzwr.model.AppUser;
 import com.rydzwr.repository.AppUserRepository;
+import com.rydzwr.service.CookieManager;
 import com.rydzwr.service.JWTService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,10 +24,12 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @RequiredArgsConstructor
-public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
+public class AuthenticationFilter extends OncePerRequestFilter {
 
     private final JWTService jwtService;
     private final AppUserRepository repository;
+
+    private final CookieManager cookieManager;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -53,15 +54,12 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
         // CREATING JSON MAP
         Map<String, String> tokens = new HashMap<>();
         tokens.put("access_token", accessToken);
-        tokens.put("role", authentication.getAuthorities().toArray()[0].toString());
+        tokens.put("role", jwtService.getUserRole(authentication));
 
         // CREATING HTTP COOKIE WITH REFRESH TOKEN
-        Cookie cookie = new Cookie("jwt", refreshToken);
-        cookie.setMaxAge(1000 * 60 * 60 * 24);
-        cookie.setHttpOnly(true);
+        cookieManager.addRefreshToken(response, refreshToken);
 
         // SENDING RESPONSE
-        response.addCookie(cookie);
         response.setContentType(APPLICATION_JSON_VALUE);
         new ObjectMapper().writeValue(response.getOutputStream(), tokens);
         response.setStatus(200);

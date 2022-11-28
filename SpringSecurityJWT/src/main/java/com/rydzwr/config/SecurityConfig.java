@@ -2,6 +2,7 @@ package com.rydzwr.config;
 
 import com.rydzwr.filter.*;
 import com.rydzwr.repository.AppUserRepository;
+import com.rydzwr.service.CookieManager;
 import com.rydzwr.service.JWTService;
 import com.rydzwr.service.TokenBlackList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ public class SecurityConfig {
     @Autowired
     public TokenBlackList tokenBlackList;
 
+    @Autowired
+    public CookieManager cookieManager;
+
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -49,8 +53,9 @@ public class SecurityConfig {
         http.authorizeHttpRequests().requestMatchers("api/login/**", "/api/token/refresh/**").permitAll();
         http.authorizeHttpRequests().anyRequest().authenticated();
         http.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
-        http.addFilterAfter(new JWTTokenGeneratorFilter(jwtService, repository), BasicAuthenticationFilter.class);
-        http.addFilterBefore(new JWTTokenValidatorFilter(jwtService, tokenBlackList), BasicAuthenticationFilter.class);
+        http.addFilterAfter(new AuthenticationFilter(jwtService, repository, cookieManager), BasicAuthenticationFilter.class);
+        http.addFilterBefore(new AuthorizationFilter(jwtService, tokenBlackList), BasicAuthenticationFilter.class);
+        http.addFilterBefore(new LogoutFilter(jwtService, tokenBlackList, repository, cookieManager), BasicAuthenticationFilter.class);
         http.httpBasic();
 
         return http.build();

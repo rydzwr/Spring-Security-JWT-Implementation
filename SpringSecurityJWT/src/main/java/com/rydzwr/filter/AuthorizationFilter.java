@@ -14,10 +14,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-
 @Slf4j
 @RequiredArgsConstructor
-public class JWTTokenValidatorFilter extends OncePerRequestFilter {
+public class AuthorizationFilter extends OncePerRequestFilter {
     private final JWTService jwtService;
 
     private final TokenBlackList tokenBlackList;
@@ -25,11 +24,9 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String jwt = request.getHeader(SecurityConstants.JWT_HEADER);
-
         String token = "";
-        if (jwt != null) {
-            token = jwt.substring("Bearer ".length());
+        if (jwtService.validateAuthHeader(request)) {
+            token = jwtService.getTokenFromAuthHeader(request);
         }
 
         if (tokenBlackList.contains(token)) {
@@ -37,9 +34,7 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (null != jwt) {
-            SecurityContextHolder.getContext().setAuthentication(jwtService.getAuthFromToken(jwt));
-        }
+        SecurityContextHolder.getContext().setAuthentication(jwtService.getAuthFromToken(request));
         filterChain.doFilter(request, response);
     }
 
