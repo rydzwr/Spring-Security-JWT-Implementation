@@ -16,9 +16,12 @@ public class AppUser {
     private String password;
     private String role;
 
-    public AppUser(String name, String password, String role) {
+    private String refreshToken;
+
+    public AppUser(String name, String password, String role, String refreshToken) {
         this.name = name;
         this.password = password;
         this.role = role;
+        this.refreshToken = refreshToken;
     }
 }

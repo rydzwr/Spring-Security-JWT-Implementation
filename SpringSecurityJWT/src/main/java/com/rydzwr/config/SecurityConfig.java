@@ -1,10 +1,14 @@
 package com.rydzwr.config;
 
 import com.rydzwr.filter.*;
+import com.rydzwr.repository.AppUserRepository;
+import com.rydzwr.service.JWTService;
+import com.rydzwr.service.TokenBlackList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +23,17 @@ import static java.util.Arrays.asList;
 
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
+
+    @Autowired
+    private JWTService jwtService;
+
+    @Autowired
+    private AppUserRepository repository;
+
+    @Autowired
+    public TokenBlackList tokenBlackList;
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -30,18 +44,15 @@ public class SecurityConfig {
                 .csrf()
                 .disable().headers().frameOptions().sameOrigin();
 
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        http
-                .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
-                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
-                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
-                .authorizeHttpRequests()
-                .requestMatchers("/api/login").permitAll()
-                .requestMatchers("/api/data/admin").hasAuthority("ADMIN")
-                .requestMatchers("/api/data/user").hasAuthority("USER")
-                .and().formLogin()
-                .and().httpBasic();
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.authorizeHttpRequests().requestMatchers("api/login/**", "/api/token/refresh/**").permitAll();
+        http.authorizeHttpRequests().anyRequest().authenticated();
+        http.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
+        http.addFilterAfter(new JWTTokenGeneratorFilter(jwtService, repository), BasicAuthenticationFilter.class);
+        http.addFilterBefore(new JWTTokenValidatorFilter(jwtService, tokenBlackList), BasicAuthenticationFilter.class);
+        http.httpBasic();
+
         return http.build();
     }
 

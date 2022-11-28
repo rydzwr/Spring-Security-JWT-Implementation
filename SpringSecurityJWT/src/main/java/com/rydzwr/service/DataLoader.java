@@ -22,7 +22,7 @@ public class DataLoader implements ApplicationRunner {
 
     public void run(ApplicationArguments args) {
         userRepository.deleteAll();
-        userRepository.save(new AppUser("user",passwordEncoder.encode("user123"),"USER"));
-        userRepository.save(new AppUser("admin",passwordEncoder.encode("admin123"),"ADMIN"));
+        userRepository.save(new AppUser("user",passwordEncoder.encode("user123"),"USER", null));
+        userRepository.save(new AppUser("admin",passwordEncoder.encode("admin123"),"ADMIN", null));
     }
 }

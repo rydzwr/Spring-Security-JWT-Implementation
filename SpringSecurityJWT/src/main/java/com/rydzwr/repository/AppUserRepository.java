@@ -7,5 +7,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AppUserRepository extends CrudRepository<AppUser, Integer> {
     AppUser findByName(String name);
+
+    AppUser findByRefreshToken(String token);
+
     void deleteAll();
 }
