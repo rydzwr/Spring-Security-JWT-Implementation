@@ -19,12 +19,13 @@ import java.util.*;
 @Service
 public class JWTService {
     private final Algorithm algorithm = Algorithm.HMAC256(SecurityConstants.JWT_KEY.getBytes());
+    private final String authorities = "authorities";
     public String generateAccessToken(HttpServletRequest request, Authentication authentication) {
         return JWT.create()
                 .withSubject(authentication.getName())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 50000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + 20 * 1000))
                 .withIssuer(request.getRequestURI())
-                .withClaim("authorities", populateAuthorities(authentication.getAuthorities()))
+                .withClaim(authorities, populateAuthorities(authentication.getAuthorities()))
                 .sign(algorithm);
     }
 
@@ -43,7 +44,8 @@ public class JWTService {
 
     public String getTokenFromAuthHeader(HttpServletRequest request) {
         String authHeader = request.getHeader(SecurityConstants.JWT_HEADER);
-        return authHeader.substring("Bearer ".length());
+        final String bearerBeg = "Bearer ";
+        return authHeader.substring(bearerBeg.length());
     }
 
     public String getUserRole(Authentication authentication) {
@@ -51,6 +53,7 @@ public class JWTService {
     }
 
     public UsernamePasswordAuthenticationToken getAuthFromToken(HttpServletRequest request) {
+        final String invalidToken = "Invalid Token received!";
         try {
             String token = getTokenFromAuthHeader(request);
             Algorithm algorithm = Algorithm.HMAC256(SecurityConstants.JWT_KEY.getBytes());
@@ -58,7 +61,7 @@ public class JWTService {
 
             DecodedJWT decodedJWT = verifier.verify(token);
             String username = decodedJWT.getSubject();
-            String authoritiesString = decodedJWT.getClaim("authorities").asString();
+            String authoritiesString = decodedJWT.getClaim(authorities).asString();
 
             Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority(authoritiesString));
@@ -66,7 +69,7 @@ public class JWTService {
             return new UsernamePasswordAuthenticationToken(username, null, authorities);
 
         } catch (Exception e) {
-            throw new BadCredentialsException("Invalid Token received!");
+            throw new BadCredentialsException(invalidToken);
         }
     }
     private String populateAuthorities(Collection<? extends GrantedAuthority> collection) {

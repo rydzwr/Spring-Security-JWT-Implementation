@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @EnableMethodSecurity
 @SpringBootApplication
 public class SpringSecurityJwtApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(SpringSecurityJwtApplication.class, args);
 	}

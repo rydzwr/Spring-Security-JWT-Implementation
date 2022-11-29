@@ -1,6 +1,5 @@
 package com.rydzwr.filter;
 
-import com.rydzwr.constants.SecurityConstants;
 import com.rydzwr.service.JWTService;
 import com.rydzwr.service.TokenBlackList;
 import jakarta.servlet.FilterChain;
@@ -40,6 +39,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getServletPath().equals("/api/login");
+        final String path = "/api/login";
+        return request.getServletPath().equals(path);
     }
 }

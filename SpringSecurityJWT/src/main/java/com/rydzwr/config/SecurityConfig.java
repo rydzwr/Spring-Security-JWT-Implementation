@@ -1,5 +1,6 @@
 package com.rydzwr.config;
 
+import com.rydzwr.constants.SecurityConstants;
 import com.rydzwr.filter.*;
 import com.rydzwr.repository.AppUserRepository;
 import com.rydzwr.service.CookieManager;
@@ -34,10 +35,10 @@ public class SecurityConfig {
     private AppUserRepository repository;
 
     @Autowired
-    public TokenBlackList tokenBlackList;
+    private TokenBlackList tokenBlackList;
 
     @Autowired
-    public CookieManager cookieManager;
+    private CookieManager cookieManager;
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -48,14 +49,35 @@ public class SecurityConfig {
                 .csrf()
                 .disable().headers().frameOptions().sameOrigin();
 
-
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeHttpRequests().requestMatchers("api/login/**", "/api/token/refresh/**").permitAll();
+
+        http.authorizeHttpRequests().requestMatchers(
+                SecurityConstants.LOGIN_ENDPOINT,
+                SecurityConstants.TOKEN_REFRESH_ENDPOINT
+        ).permitAll();
+
         http.authorizeHttpRequests().anyRequest().authenticated();
-        http.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
-        http.addFilterAfter(new AuthenticationFilter(jwtService, repository, cookieManager), BasicAuthenticationFilter.class);
-        http.addFilterBefore(new AuthorizationFilter(jwtService, tokenBlackList), BasicAuthenticationFilter.class);
-        http.addFilterBefore(new LogoutFilter(jwtService, tokenBlackList, repository, cookieManager), BasicAuthenticationFilter.class);
+
+        http.addFilterBefore(
+                new RequestValidationBeforeFilter(),
+                BasicAuthenticationFilter.class
+        );
+        http.addFilterAfter(
+                new AuthenticationFilter(jwtService, repository, cookieManager),
+                BasicAuthenticationFilter.class
+        );
+        http.addFilterBefore(
+                new AuthorizationFilter(jwtService, tokenBlackList),
+                BasicAuthenticationFilter.class
+        );
+        http.addFilterBefore(
+                new LogoutFilter(jwtService, tokenBlackList, repository, cookieManager),
+                BasicAuthenticationFilter.class
+        );
+        http.addFilterBefore(
+                new JWTTokenRefreshFilter(repository, jwtService, cookieManager, tokenBlackList),
+                BasicAuthenticationFilter.class
+        );
         http.httpBasic();
 
         return http.build();
@@ -70,7 +92,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(asList("http://localhost:4200", "http://127.0.0.1:4200"));
+        configuration.setAllowedOrigins(asList(SecurityConstants.ANGULAR_LOCALHOST_PATH, SecurityConstants.ANGULAR_IP_PATH));
         configuration.setAllowCredentials(true);
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");

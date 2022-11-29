@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,10 +26,8 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 @Slf4j
 @RequiredArgsConstructor
 public class AuthenticationFilter extends OncePerRequestFilter {
-
     private final JWTService jwtService;
     private final AppUserRepository repository;
-
     private final CookieManager cookieManager;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -67,6 +66,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getServletPath().equals("/api/login");
+        final String path = "/api/login";
+        return !request.getServletPath().equals(path);
     }
 }

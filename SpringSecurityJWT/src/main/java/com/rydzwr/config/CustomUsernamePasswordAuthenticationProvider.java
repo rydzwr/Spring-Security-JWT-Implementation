@@ -2,7 +2,6 @@ package com.rydzwr.config;
 
 import com.rydzwr.model.AppUser;
 import com.rydzwr.repository.AppUserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -20,7 +19,6 @@ import java.util.List;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class CustomUsernamePasswordAuthenticationProvider implements AuthenticationProvider {
     @Autowired
     private AppUserRepository repository;
@@ -30,6 +28,10 @@ public class CustomUsernamePasswordAuthenticationProvider implements Authenticat
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+
+        final String invalidPassword = "Invalid password!";
+        final String userNotFound = "No user registered with this details!";
+
         String username = authentication.getName();
         String password = authentication.getCredentials().toString();
         AppUser appUser = repository.findByName(username);
@@ -37,10 +39,10 @@ public class CustomUsernamePasswordAuthenticationProvider implements Authenticat
             if (encoder.matches(password, appUser.getPassword())) {
                 return new UsernamePasswordAuthenticationToken(username, password, getGrantedAuthorities(appUser.getRole()));
             } else {
-                throw new BadCredentialsException("Invalid password!");
+                throw new BadCredentialsException(invalidPassword);
             }
         } else {
-            throw new BadCredentialsException("No user registered with this details!");
+            throw new BadCredentialsException(userNotFound);
         }
     }
 
