@@ -45,7 +45,7 @@ public class JWTTokenRefreshFilter extends OncePerRequestFilter {
         // CREATING MAP OF COOKIES
         Map<String, Cookie> cookieMap = cookieManager.createCookieMap(request);
 
-        // IF MAP DOESN'T CONTAINS JWT, SENDING UNAUTHORIZED
+        // IF MAP DOESN'T CONTAIN JWT, SENDING UNAUTHORIZED
         if (!cookieMap.containsKey(jwt)) {
             sendError(response, UNAUTHORIZED, tokenIsMissing);
             return;

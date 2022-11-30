@@ -6,7 +6,9 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.rydzwr.constants.SecurityConstants;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Service
 public class JWTService {
     private final Algorithm algorithm = Algorithm.HMAC256(SecurityConstants.JWT_KEY.getBytes());
@@ -69,10 +72,10 @@ public class JWTService {
             return new UsernamePasswordAuthenticationToken(username, null, authorities);
 
         } catch (Exception e) {
-            throw new BadCredentialsException(invalidToken);
+            throw new AuthenticationServiceException(invalidToken);
         }
     }
-    private String populateAuthorities(Collection<? extends GrantedAuthority> collection) {
+    public String populateAuthorities(Collection<? extends GrantedAuthority> collection) {
         Set<String> authoritiesSet = new HashSet<>();
         for (GrantedAuthority authority : collection) {
             authoritiesSet.add(authority.getAuthority());

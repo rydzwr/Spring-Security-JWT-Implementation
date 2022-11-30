@@ -23,12 +23,14 @@ public class AuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        boolean validAuth = jwtService.validateAuthHeader(request);
+
         String token = "";
-        if (jwtService.validateAuthHeader(request)) {
+        if (validAuth) {
             token = jwtService.getTokenFromAuthHeader(request);
         }
 
-        if (tokenBlackList.contains(token)) {
+        if (!validAuth || tokenBlackList.contains(token)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
         }

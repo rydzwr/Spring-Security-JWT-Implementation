@@ -44,7 +44,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         String accessToken = jwtService.generateAccessToken(request, authentication);
         String refreshToken = jwtService.generateRefreshToken(request, authentication);
 
-
         // SAVING REFRESH TOKEN INTO DATABASE
         AppUser user = repository.findByName(authentication.getName());
         user.setRefreshToken(refreshToken);
@@ -67,6 +66,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         final String path = "/api/login";
+        log.info("Authentication Filter Servlet Path: -->> {}", request.getServletPath());
         return !request.getServletPath().equals(path);
     }
 }
