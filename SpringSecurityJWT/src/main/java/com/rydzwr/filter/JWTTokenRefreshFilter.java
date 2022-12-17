@@ -1,6 +1,5 @@
 package com.rydzwr.filter;
 
-import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rydzwr.model.AppUser;
 import com.rydzwr.repository.AppUserRepository;
@@ -8,7 +7,6 @@ import com.rydzwr.service.CookieManager;
 import com.rydzwr.service.JWTService;
 import com.rydzwr.service.TokenBlackList;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,6 +32,8 @@ public class JWTTokenRefreshFilter extends OncePerRequestFilter {
 
     private final TokenBlackList tokenBlackList;
 
+    private final FilterErrorHandler errorHandler;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException {
 
@@ -47,7 +47,7 @@ public class JWTTokenRefreshFilter extends OncePerRequestFilter {
 
         // IF MAP DOESN'T CONTAIN JWT, SENDING UNAUTHORIZED
         if (!cookieMap.containsKey(jwt)) {
-            sendError(response, UNAUTHORIZED, tokenIsMissing);
+            errorHandler.sendError(response, UNAUTHORIZED, tokenIsMissing);
             return;
         }
 
@@ -62,7 +62,7 @@ public class JWTTokenRefreshFilter extends OncePerRequestFilter {
 
             // IF USER WITH GIVEN TOKEN DOESN'T EXIST, MEANS TOKEN IS INVALID
             if (user == null) {
-                sendError(response, FORBIDDEN, invalidRefreshToken);
+                errorHandler.sendError(response, FORBIDDEN, invalidRefreshToken);
                 return;
             }
 
@@ -81,19 +81,8 @@ public class JWTTokenRefreshFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
             // IF SOMETHING WENT WRONG DURING GENERATING NEW TOKEN SENDING SERVER ERROR
-            sendError(response, INTERNAL_SERVER_ERROR, couldNotGenerateRefreshToken);
+            errorHandler.sendError(response, INTERNAL_SERVER_ERROR, couldNotGenerateRefreshToken);
         }
-    }
-
-    private void sendError(HttpServletResponse response, HttpStatus status, String message) throws IOException {
-        response.setHeader("error", message);
-        response.setStatus(status.value());
-
-        Map<String, String> error = new HashMap<>();
-        error.put("error_message", message);
-
-        response.setContentType(APPLICATION_JSON_VALUE);
-        new ObjectMapper().writeValue(response.getOutputStream(), error);
     }
 
     @Override

@@ -1,9 +1,5 @@
 package com.rydzwr.constants;
 
-import java.util.List;
-
-import static java.util.Arrays.asList;
-
 public class SecurityConstants {
     public static final String JWT_KEY = "jxgEQeXHuPq8VdbyYFNkANdudQ53YUn4";
     public static final String JWT_HEADER = "Authorization";

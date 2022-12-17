@@ -10,7 +10,10 @@ import java.util.Map;
 
 @Component
 public class CookieManager {
+    private final int ONE_DAY = 1000 * 60 * 60 * 24;
+
     private final String jwt = "jwt";
+
     public Map<String, Cookie> createCookieMap(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         Map<String, Cookie> cookieMap = new HashMap<>();
@@ -29,7 +32,7 @@ public class CookieManager {
 
     public void addRefreshToken(HttpServletResponse response, String refreshToken) {
         Cookie cookie = new Cookie(jwt, refreshToken);
-        cookie.setMaxAge(1000 * 60 * 60 * 24);
+        cookie.setMaxAge(ONE_DAY);
         cookie.setHttpOnly(true);
         response.addCookie(cookie);
     }

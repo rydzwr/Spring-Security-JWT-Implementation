@@ -41,7 +41,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        final String path = "/api/login";
-        return request.getServletPath().equals(path);
+        final String pathLogin = "/api/login";
+        return request.getServletPath().equals(pathLogin);
     }
 }
