@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
@@ -325,5 +326,55 @@ public class UserControllerTest {
                         get("/api/data/admin")
                                 .headers(createBearerHeader(newAccessToken)))
                 .andExpect(status().is2xxSuccessful());
+    }
+
+    @Test
+    @DisplayName("Should Register New User And Then Allow Him to Login")
+    public void registerTest() throws Exception {
+        final String[] results = new String[2];
+
+        // REGISTERING NEW USER TO DB
+        this.mockMvc.perform(
+                        get("/api/register")
+                                .servletPath("/api/register")
+                                .headers(getBasicAuthHeader("newUser", "newPass")))
+                .andExpect(status().is(HttpStatus.CREATED.value()));
+
+        // LOGGING AFTER SUCCESSFUL REGISTER
+        this.mockMvc.perform(
+                        get("/api/login")
+                                .servletPath("/api/login")
+                                .headers(getBasicAuthHeader("newUser", "newPass")))
+                .andDo(result -> {
+                    var parser = new JSONObject(result.getResponse().getContentAsString());
+                    results[0] = parser.getString("access_token");
+                    results[1] = parser.getString("role");
+                });
+
+        // SAVING USER'S ACCESS TOKEN AND ROLE FROM JSON
+        String accessToken = results[0];
+        String userRole = results[1];
+
+        // VALIDATING DATA
+        assertNotNull(accessToken);
+        assertThat(userRole, equalTo("USER"));
+    }
+
+    @Test
+    @DisplayName("Should Throw An Error When User Is Trying To Duplicate Username")
+    public void checkDuplicateException() throws Exception {
+        // REGISTERING NEW USER INTO DB
+        this.mockMvc.perform(
+                        get("/api/register")
+                                .servletPath("/api/register")
+                                .headers(getBasicAuthHeader("newUser", "newPass")))
+                .andExpect(status().is(HttpStatus.CREATED.value()));
+
+        // TRYING TO REGISTER USER WITH SAME USERNAME
+        this.mockMvc.perform(
+                        get("/api/register")
+                                .servletPath("/api/register")
+                                .headers(getBasicAuthHeader("newUser", "secondPass")))
+                .andExpect(status().is(HttpStatus.CONFLICT.value()));
     }
 }

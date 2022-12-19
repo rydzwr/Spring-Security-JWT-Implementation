@@ -34,9 +34,12 @@ public class AuthHeaderDataExtractor {
                 byte[] base64Token = header.substring(6).getBytes(StandardCharsets.UTF_8);
                 byte[] decoded;
 
+                log.info("HEADER: -->> {}", header);
+
                 try {
                     decoded = Base64.getDecoder().decode(base64Token);
                     token = new String(decoded, credentialsCharset);
+                    log.info("TOKEN: -->> {}", token);
                     int delim = token.indexOf(":");
 
                     if (delim == -1) {
