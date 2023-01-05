@@ -6,7 +6,6 @@ import com.rydzwr.repository.AppUserRepository;
 import com.rydzwr.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,6 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 
+import static com.rydzwr.constants.SecurityConstants.*;
 import static java.util.Arrays.asList;
 
 
@@ -46,9 +46,6 @@ public class SecurityConfig {
     @Autowired
     private FilterErrorHandler errorHandler;
 
-    @Autowired
-    private UserService service;
-
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -61,29 +58,28 @@ public class SecurityConfig {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeHttpRequests().requestMatchers(
-                SecurityConstants.LOGIN_ENDPOINT,
-                SecurityConstants.TOKEN_REFRESH_ENDPOINT
+                LOGIN_ENDPOINT,
+                TOKEN_REFRESH_ENDPOINT,
+                REGISTER_ENDPOINT
         ).permitAll();
 
         http.authorizeHttpRequests().anyRequest().authenticated();
 
         http.addFilterBefore(
-                new RegisterFilter(extractor, service, errorHandler, passwordEncoder()),
+                new RequestValidationBeforeFilter(extractor),
                 BasicAuthenticationFilter.class
         );
 
         http.addFilterBefore(
-                new RequestValidationBeforeFilter(extractor),
+                new AuthorizationFilter(jwtService, tokenBlackList, errorHandler),
                 BasicAuthenticationFilter.class
         );
+
         http.addFilterAfter(
                 new AuthenticationFilter(jwtService, repository, cookieManager),
                 BasicAuthenticationFilter.class
         );
-        http.addFilterBefore(
-                new AuthorizationFilter(jwtService, tokenBlackList),
-                BasicAuthenticationFilter.class
-        );
+
         http.addFilterBefore(
                 new LogoutFilter(jwtService, tokenBlackList, repository, cookieManager),
                 BasicAuthenticationFilter.class
@@ -92,11 +88,11 @@ public class SecurityConfig {
                 new JWTTokenRefreshFilter(repository, jwtService, cookieManager, tokenBlackList, errorHandler),
                 BasicAuthenticationFilter.class
         );
+
         http.httpBasic();
 
         return http.build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

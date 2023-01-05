@@ -16,7 +16,7 @@ public class UserService {
     private final AppUserRepository repository;
 
     @Transactional
-    public void saveUser(@Valid AppUser appUser) {
+    public void saveUser(AppUser appUser) {
         repository.save(appUser);
     }
 

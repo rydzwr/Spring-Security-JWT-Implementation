@@ -1,7 +1,6 @@
 package com.rydzwr.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,9 +12,7 @@ public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-    @Size(min = 3, max = 20)
     private String name;
-    @Size(min = 3, max = 200)
     private String password;
     private String role;
     private String refreshToken;

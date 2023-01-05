@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,6 +20,8 @@ public class AuthorizationFilter extends OncePerRequestFilter {
     private final JWTService jwtService;
 
     private final TokenBlackList tokenBlackList;
+
+    private final FilterErrorHandler errorHandler;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -31,7 +34,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
         }
 
         if (!validAuth || tokenBlackList.contains(token)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            errorHandler.sendError(response, HttpStatus.FORBIDDEN, "Invalid Auth Token!");
             return;
         }
 
@@ -41,7 +44,8 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+        final String pathRegister = "/api/user/register";
         final String pathLogin = "/api/login";
-        return request.getServletPath().equals(pathLogin);
+        return request.getServletPath().equals(pathRegister) || request.getServletPath().equals(pathLogin);
     }
 }

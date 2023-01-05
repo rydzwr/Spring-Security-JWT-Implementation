@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+import static java.util.Arrays.asList;
+
 @Slf4j
 @Service
 public class JWTService {
@@ -25,7 +27,7 @@ public class JWTService {
     public String generateAccessToken(HttpServletRequest request, Authentication authentication) {
         return JWT.create()
                 .withSubject(authentication.getName())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 20 * 1000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + 15 * 60 * 1000))
                 .withIssuer(request.getRequestURI())
                 .withClaim(authorities, populateAuthorities(authentication.getAuthorities()))
                 .sign(algorithm);
@@ -40,8 +42,7 @@ public class JWTService {
     }
 
     public boolean validateAuthHeader(HttpServletRequest request) {
-        String authHeader = request.getHeader(SecurityConstants.JWT_HEADER);
-        return authHeader != null;
+        return request.getHeader(SecurityConstants.JWT_HEADER) != null;
     }
 
     public String getTokenFromAuthHeader(HttpServletRequest request) {
@@ -63,7 +64,12 @@ public class JWTService {
 
             DecodedJWT decodedJWT = verifier.verify(token);
             String username = decodedJWT.getSubject();
+            log.info("USERNAME: -->> {}", username);
             String authoritiesString = decodedJWT.getClaim(authorities).asString();
+
+            log.info("Expires At: --> {}", decodedJWT.getExpiresAt().toString());
+
+            log.info("authorities: -->> {}", authoritiesString);
 
             Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority(authoritiesString));
@@ -75,6 +81,9 @@ public class JWTService {
         }
     }
     public String populateAuthorities(Collection<? extends GrantedAuthority> collection) {
+
+        // TODO use lambda
+
         Set<String> authoritiesSet = new HashSet<>();
         for (GrantedAuthority authority : collection) {
             authoritiesSet.add(authority.getAuthority());

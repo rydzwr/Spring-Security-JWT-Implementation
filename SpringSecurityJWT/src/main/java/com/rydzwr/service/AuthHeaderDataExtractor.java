@@ -18,13 +18,13 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class AuthHeaderDataExtractor {
     public static final String AUTHENTICATION_SCHEME_BASIC = "Basic";
     private final Charset credentialsCharset = StandardCharsets.UTF_8;
+    final String invalidBasicAuth = "Invalid basic authentication token";
+    final String failedToDecode = "Failed to decode basic authentication token";
+
     public String extract(ServletRequest request) {
         HttpServletRequest req = (HttpServletRequest) request;
 
         String token = null;
-
-        final String invalidBasicAuth = "Invalid basic authentication token";
-        final String failedToDecode = "Failed to decode basic authentication token";
 
         String header = req.getHeader(AUTHORIZATION);
         if (header != null) {

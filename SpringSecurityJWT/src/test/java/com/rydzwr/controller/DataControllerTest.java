@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTest {
+public class DataControllerTest {
     static final String TOKEN_PREFIX = "Bearer ";
     static final String LOGIN_PREFIX = "Basic ";
     static final String HEADER_STRING = HttpHeaders.AUTHORIZATION;

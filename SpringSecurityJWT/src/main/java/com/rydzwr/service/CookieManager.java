@@ -13,6 +13,7 @@ public class CookieManager {
     private final String jwt = "jwt";
 
     public Map<String, Cookie> createCookieMap(HttpServletRequest request) {
+        // TODO: Lambda
         Cookie[] cookies = request.getCookies();
         Map<String, Cookie> cookieMap = new HashMap<>();
         for (Cookie cookie : cookies) {
