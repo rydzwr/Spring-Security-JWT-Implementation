@@ -37,7 +37,7 @@ public class CustomUsernamePasswordAuthenticationProvider implements Authenticat
         AppUser appUser = repository.findByName(username);
         if (appUser != null) {
             if (encoder.matches(password, appUser.getPassword())) {
-                return new UsernamePasswordAuthenticationToken(username, password, getGrantedAuthorities(appUser.getRole()));
+                return new UsernamePasswordAuthenticationToken(username, password, getGrantedAuthorities(appUser.getRole().getName()));
             } else {
                 throw new BadCredentialsException(invalidPassword);
             }

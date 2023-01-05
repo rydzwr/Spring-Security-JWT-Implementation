@@ -1,23 +1,21 @@
-package com.rydzwr.service;
+package com.rydzwr.DBService;
 
-import com.rydzwr.model.AppUser;
-import com.rydzwr.repository.AppUserRepository;
+import com.rydzwr.model.UserRole;
+import com.rydzwr.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.validation.Valid;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserService {
-    private final AppUserRepository repository;
+public class RoleService {
+    private final UserRoleRepository repository;
 
     @Transactional
-    public void saveUser(AppUser appUser) {
-        repository.save(appUser);
+    public void saveRole(UserRole role) {
+        repository.save(role);
     }
 
     @Transactional

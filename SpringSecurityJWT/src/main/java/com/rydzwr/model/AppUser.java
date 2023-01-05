@@ -14,13 +14,11 @@ public class AppUser {
     private int id;
     private String name;
     private String password;
-    private String role;
     private String refreshToken;
-
-    public AppUser(String name, String password, String role, String refreshToken) {
+    @ManyToOne
+    private UserRole role;
+    public AppUser(String name, String password) {
         this.name = name;
         this.password = password;
-        this.role = role;
-        this.refreshToken = refreshToken;
     }
 }

@@ -4,7 +4,7 @@ import com.rydzwr.dto.AppUserDto;
 import com.rydzwr.factory.UserFactory;
 import com.rydzwr.model.AppUser;
 import com.rydzwr.service.AuthHeaderDataExtractor;
-import com.rydzwr.service.UserService;
+import com.rydzwr.DBService.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

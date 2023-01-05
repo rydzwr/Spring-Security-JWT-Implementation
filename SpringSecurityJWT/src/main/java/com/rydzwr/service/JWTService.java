@@ -14,10 +14,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-
 import java.util.*;
-
-import static java.util.Arrays.asList;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -81,13 +79,9 @@ public class JWTService {
         }
     }
     public String populateAuthorities(Collection<? extends GrantedAuthority> collection) {
-
-        // TODO use lambda
-
-        Set<String> authoritiesSet = new HashSet<>();
-        for (GrantedAuthority authority : collection) {
-            authoritiesSet.add(authority.getAuthority());
-        }
+        Set<String> authoritiesSet = collection.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
         return String.join(",", authoritiesSet);
     }
 }
