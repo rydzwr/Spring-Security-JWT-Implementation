@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class RoleService {
     private final UserRoleRepository repository;
 
-    @Transactional
+    //@Transactional
     public void saveRole(UserRole role) {
         repository.save(role);
     }
 
-    @Transactional
+    //@Transactional
     public void deleteAll() {
         repository.deleteAll();
     }

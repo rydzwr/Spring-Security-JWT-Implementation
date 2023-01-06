@@ -1,5 +1,6 @@
 package com.rydzwr.config;
 
+import com.rydzwr.DBService.UserService;
 import com.rydzwr.constants.SecurityConstants;
 import com.rydzwr.filter.*;
 import com.rydzwr.repository.AppUserRepository;
@@ -30,6 +31,9 @@ public class SecurityConfig {
 
     @Autowired
     private JWTService jwtService;
+
+    @Autowired
+    private UserService service;
 
     @Autowired
     private AppUserRepository repository;
@@ -76,7 +80,7 @@ public class SecurityConfig {
         );
 
         http.addFilterAfter(
-                new AuthenticationFilter(jwtService, repository, cookieManager),
+                new AuthenticationFilter(jwtService, service, repository, cookieManager),
                 BasicAuthenticationFilter.class
         );
 

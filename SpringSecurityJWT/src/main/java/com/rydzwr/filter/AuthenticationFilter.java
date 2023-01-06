@@ -1,8 +1,10 @@
 package com.rydzwr.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rydzwr.DBService.UserService;
 import com.rydzwr.model.AppUser;
 import com.rydzwr.repository.AppUserRepository;
+import com.rydzwr.repository.UserRoleRepository;
 import com.rydzwr.service.CookieManager;
 import com.rydzwr.service.JWTService;
 import jakarta.servlet.FilterChain;
@@ -25,6 +27,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 @RequiredArgsConstructor
 public class AuthenticationFilter extends OncePerRequestFilter {
     private final JWTService jwtService;
+    private final UserService service;
     private final AppUserRepository repository;
     private final CookieManager cookieManager;
     @Override
@@ -45,7 +48,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         // SAVING REFRESH TOKEN INTO DATABASE
         AppUser user = repository.findByName(authentication.getName());
         user.setRefreshToken(refreshToken);
-        repository.save(user);
+        service.saveUser(user);
 
         // CREATING JSON MAP
         Map<String, String> tokens = new HashMap<>();

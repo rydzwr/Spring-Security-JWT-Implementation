@@ -13,17 +13,16 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        // TODO: Lambda map
-        Map<String, String> errors = new HashMap<>();
-        for (var error : ex.getBindingResult().getAllErrors()) {
-            errors.put(error.getCodes()[0], error.getDefaultMessage());
-        }
+        Map<String, String> errors = ex.getBindingResult().getAllErrors().stream()
+                .collect(Collectors.toMap(error -> error.getCodes()[0], error -> error.getDefaultMessage()));
+
 
         ErrorModel error = new ErrorModel(HttpStatus.BAD_REQUEST, LocalDateTime.now(), "Validation Error", errors);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);

@@ -20,6 +20,7 @@ public class DataLoader implements ApplicationRunner {
 
     @Profile("dev")
     public void run(ApplicationArguments args) {
+
         roleService.deleteAll();
         userService.deleteAll();
 
@@ -33,5 +34,7 @@ public class DataLoader implements ApplicationRunner {
 
         userService.saveUser(appUser);
         userService.saveUser(appAdmin);
+
+
     }
 }

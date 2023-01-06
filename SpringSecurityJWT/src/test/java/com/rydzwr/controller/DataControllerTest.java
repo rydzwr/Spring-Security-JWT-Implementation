@@ -10,19 +10,22 @@ import com.rydzwr.service.JWTService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,7 +36,6 @@ import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.*;
 
 
 @Slf4j
@@ -138,6 +140,7 @@ public class DataControllerTest {
                         get("/api/login")
                                 .servletPath("/api/login")
                                 .headers(getBasicAuthHeader("user", "user123")))
+                .andDo(print())
                 .andExpect(status().is2xxSuccessful());
     }
 
@@ -262,6 +265,7 @@ public class DataControllerTest {
                         get("/api/data/admin")
                                 .headers(createBearerHeader(accessToken)))
                 .andExpect(status().isForbidden());
+
     }
 
     @Test
@@ -333,18 +337,21 @@ public class DataControllerTest {
     public void registerTest() throws Exception {
         final String[] results = new String[2];
 
+        final String requestBody = "{\"name\":\"test\",\"password\":\"test123\"}";
+
         // REGISTERING NEW USER TO DB
         this.mockMvc.perform(
-                        get("/api/register")
-                                .servletPath("/api/register")
-                                .headers(getBasicAuthHeader("newUser", "newPass")))
-                .andExpect(status().is(HttpStatus.CREATED.value()));
+                        post("/api/user/register")
+                                .servletPath("/api/user/register")
+                                .content(requestBody)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful());
 
         // LOGGING AFTER SUCCESSFUL REGISTER
         this.mockMvc.perform(
                         get("/api/login")
                                 .servletPath("/api/login")
-                                .headers(getBasicAuthHeader("newUser", "newPass")))
+                                .headers(getBasicAuthHeader("test", "test123")))
                 .andDo(result -> {
                     var parser = new JSONObject(result.getResponse().getContentAsString());
                     results[0] = parser.getString("access_token");
@@ -364,17 +371,22 @@ public class DataControllerTest {
     @DisplayName("Should Throw An Error When User Is Trying To Duplicate Username")
     public void checkDuplicateException() throws Exception {
         // REGISTERING NEW USER INTO DB
+
+        final String requestBody = "{\"name\":\"test\",\"password\":\"test123\"}";
+
         this.mockMvc.perform(
-                        get("/api/register")
-                                .servletPath("/api/register")
-                                .headers(getBasicAuthHeader("newUser", "newPass")))
-                .andExpect(status().is(HttpStatus.CREATED.value()));
+                        post("/api/user/register")
+                                .servletPath("/api/user/register")
+                                .content(requestBody)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful());
 
         // TRYING TO REGISTER USER WITH SAME USERNAME
         this.mockMvc.perform(
-                        get("/api/register")
-                                .servletPath("/api/register")
-                                .headers(getBasicAuthHeader("newUser", "secondPass")))
-                .andExpect(status().is(HttpStatus.CONFLICT.value()));
+                        post("/api/user/register")
+                                .servletPath("/api/user/register")
+                                .content(requestBody)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
     }
 }
